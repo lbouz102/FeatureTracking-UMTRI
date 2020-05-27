@@ -41,6 +41,7 @@ def find_face(detections, frameWidth, frameHeight):
     x2 = 0
     y1 = 0
     y2 = 0
+    max_xy = [0, 0, 0, 0]
     for i in range(detections.shape[2]):
         confidence = detections[0, 0, i, 2]
         if confidence > 0.5:
@@ -48,15 +49,19 @@ def find_face(detections, frameWidth, frameHeight):
             y1 = int(detections[0, 0, i, 4] * frameHeight)
             x2 = int(detections[0, 0, i, 5] * frameWidth)
             y2 = int(detections[0, 0, i, 6] * frameHeight)
-    return x1, x2, y1, y2
+            if (abs(x2-x1)*abs(y2-y1)) > (abs(max_xy[1]-max_xy[0])*abs(max_xy[3]-max_xy[2])):
+                max_xy[0] = x1
+                max_xy[1] = x2
+                max_xy[2] = y1
+                max_xy[3] = y2
+                
+    return max_xy[0], max_xy[1], max_xy[2], max_xy[3]
 
 
 def face_extremes(shape):
     # min_x, max_x, min_y, max_y
     left_eye = [100000, 0, 100000, 0]
     right_eye = [100000, 0, 100000, 0]
-    nose = [100000, 0, 100000, 0]
-    mouth = [100000, 0, 100000, 0]
     
     for (name, (i, j)) in FACIAL_LANDMARKS_IDXS.items():
         if name == 'left_eye':
@@ -79,26 +84,5 @@ def face_extremes(shape):
                     right_eye[2] = y
                 if y > right_eye[3]:
                     right_eye[3] = y
-        elif name == 'nose':
-            for (x, y) in shape[i:j]:
-                if x < nose[0]:
-                    nose[0] = x
-                if x > nose[1]:
-                    nose[1] = x
-                if y < nose[2]:
-                    nose[2] = y
-                if y > nose[3]:
-                    nose[3] = y
                     
-        elif name == 'mouth':
-            for (x, y) in shape[i:j]:
-                if x < mouth[0]:
-                    mouth[0] = x
-                if x > mouth[1]:
-                    mouth[1] = x
-                if y < mouth[2]:
-                    mouth[2] = y
-                if y > mouth[3]:
-                    mouth[3] = y
-                    
-    return left_eye, right_eye, nose, mouth
+    return left_eye, right_eye

@@ -4,14 +4,17 @@
 import sys
 import cv2
 import dlib
-import numpy as np
 import helper
 
 subject = sys.argv[1]
 webcam = cv2.VideoCapture('videos/' + subject + '.avi')
 
 f = open("data/" + subject + "_Feature.csv", "w")
-f.write("Frame,Face Top Left (x),Face Top Left (y),Face Bottom Right (x),Face Bottom Left (y),Eye Left Center (x),Eye Left Center (y),Eye Right Center (x),Eye Right Center (y),Nose Center (x),Nose Center (y),Mouth Center (x),Mouth Center (y)\n")
+f.write("Frame,Face Top Left (x),Face Top Left (y),Face Bottom Right (x),Face Bottom Left (y),Eye Left Center (x),Eye Left Center (y),Eye Right Center (x),Eye Right Center (y)")
+
+for i in range(28,69):
+    f.write(","+"Pt. "+str(i)+" (x)"+","+"Pt. "+str(i)+" (y)")
+f.write("\n")
 
 # Detector and predictor set up
 modelFile = "detector/res10_300x300_ssd_iter_140000.caffemodel"
@@ -39,26 +42,27 @@ while True:
     shape = helper.shape_to_np(shape)
     
     # Find eye point extremes (corners)
-    left_eye, right_eye, nose, mouth = helper.face_extremes(shape)
+    left_eye, right_eye = helper.face_extremes(shape)
     
     # Draw eye rectangles
     cv2.rectangle(frame,(left_eye[0]-10,left_eye[2]-10),((left_eye[1]+10,left_eye[3]+10)),(255,0,0),2)
     cv2.rectangle(frame,(right_eye[0]-10,right_eye[2]-10),((right_eye[1]+10,right_eye[3]+10)),(255,0,0),2)
 
-    # Draw nose and mouth
-    cv2.circle(frame,(int((nose[0]+nose[1])/2),int((nose[2]+nose[3])/2)),6,(255,0,0))
-    cv2.circle(frame,(int((mouth[0]+mouth[1])/2),int((mouth[2]+mouth[3])/2)),6,(255,0,0)) 
-    
     eye_left_center = ((left_eye[0]+left_eye[1])/2,(left_eye[2]+left_eye[3])/2)
     eye_right_center = ((right_eye[0]+right_eye[1])/2,(right_eye[2]+right_eye[3])/2)
-    nose_center = ((nose[0]+nose[1])/2,(nose[2]+nose[3])/2)
-    mouth_center = ((mouth[0]+mouth[1])/2,(mouth[2]+mouth[3])/2)
-    f.write(str(webcam.get(1))+","+str(x1)+","+str(y1)+","+str(x2)+","+str(y2)+","+str(eye_left_center[0])+","+str(eye_left_center[1])+","+str(eye_right_center[0])+","+str(eye_right_center[1])+","+str(nose_center[0])+","+str(nose_center[1])+","+str(mouth_center[0])+","+str(mouth_center[1])+"\n")
+    f.write(str(webcam.get(1))+","+str(x1)+","+str(y1)+","+str(x2)+","+str(y2)+","+str(eye_left_center[0])+","+str(eye_left_center[1])+","+str(eye_right_center[0])+","+str(eye_right_center[1]))
+    
+    for (x,y) in shape[27:68]:
+        f.write(","+str(x)+","+str(y))
+        cv2.circle(frame,(int(x),int(y)),3,(255,0,0))
+    f.write("\n")
+    
     cv2.imshow("Image", frame)
     
-    if cv2.waitKey(1) == 27:
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord("q"):
         break
-    if cv2.waitKey(1) == 116:
-        print(webcam.get(1))
+    if key == ord("t"):
+        print(webcam.get(1) / 1800)
 
 f.close()
