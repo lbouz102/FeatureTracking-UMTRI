@@ -27,6 +27,8 @@ while True:
     _, frame = webcam.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
    
+    print(webcam.get(5))
+    
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], False, False)
     frameWidth  = webcam.get(3)  # float
     frameHeight = webcam.get(4) # float
