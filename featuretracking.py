@@ -20,7 +20,7 @@ if show_flag:
 num_frames = int(webcam.get(7))
 
 f = open("data/" + subject + "_Feature.csv", "w")
-f.write("Frame,Time (ms),Face Top Left (x),Face Top Left (y),Face Bottom Right (x),Face Bottom Left (y),Eye Left Center (x),Eye Left Center (y),Eye Right Center (x),Eye Right Center (y)")
+f.write("Frame,Time (ms),Face Top Left (x),Face Top Left (y),Face Bottom Right (x),Face Bottom Right (y),Eye Left Center (x),Eye Left Center (y),Eye Right Center (x),Eye Right Center (y)")
 file_data = []
 
 for i in range(28,69):
@@ -33,10 +33,12 @@ configFile = "detector/deploy.prototxt.txt"
 predictor = dlib.shape_predictor('predictor/shape_predictor_68_face_landmarks.dat')
 net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
-for frame_num in range(num_frames):
+for i in range(num_frames):
     # We get a new frame from the webcam
     retval, frame = webcam.read()
     if retval:
+        fail_cntr = 0
+        frame_num = int(webcam.get(1))
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), [104, 117, 123], False, False)
         frameWidth  = webcam.get(3)  # float
@@ -64,7 +66,7 @@ for frame_num in range(num_frames):
         eye_right_center = ((right_eye[0]+right_eye[1])/2,(right_eye[2]+right_eye[3])/2)
 
         data_row = []
-        data_row.append(str(webcam.get(1)))
+        data_row.append(str(frame_num))
         data_row.append(str(webcam.get(0)))
         data_row.append(str(x1))
         data_row.append(str(y1))
@@ -90,7 +92,7 @@ for frame_num in range(num_frames):
                 print(webcam.get(1) / 1800)
         else:
             if frame_num % 9000 == 0:
-                print(int(frame_num / 1800))
+                print(frame_num / 1800)
 
 for row in file_data:
     for i in range(len(row)):
